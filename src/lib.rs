@@ -1,82 +1,5 @@
 #![doc = include_str!("../Readme.md")]
 
-#[macro_export]
-macro_rules! _concat_str_internal {
-    (
-        @pre {$($pre:stmt,)*},
-        @strname $strname:ident,
-        @len $($len:expr)?, 
-        @appends {$($appends:expr,)*},
-        $head:literal $(, $($tail:tt)*)?
-    ) => {
-        $crate::_concat_str_internal!(
-            @pre {$($pre, )*
-                let tmp_res = $head
-            ,},            
-            @strname $strname,
-            @len $($len +)? tmp_res.len(), 
-            @appends {
-                $($appends,)* 
-                $strname.push_str(tmp_res),
-            }, 
-            $($($tail)*)?
-        )
-    };
-
-    (
-        @pre {$($pre:stmt,)*},
-        @strname $strname:ident,
-        @len $($len:expr)?, 
-        @appends {$($appends:expr,)*},
-        $head:ident $(, $($tail:tt)*)?
-    ) => {
-        $crate::_concat_str_internal!(
-            @pre {$($pre, )*},
-            @strname $strname,
-            @len $($len +)? $head.len(), 
-            @appends {
-                $($appends,)* 
-                $strname.push_str($head),
-            }, 
-            $($($tail)*)?
-        )
-    };
-
-    (
-        @pre {$($pre:stmt,)*},
-        @strname $strname:ident,
-        @len $($len:expr)?, 
-        @appends {$($appends:expr,)*},
-        $head:expr $(, $($tail:tt)*)?
-    ) => {
-        $crate::_concat_str_internal!(
-            @pre {$($pre, )*
-                let tmp_res = $head
-            ,},
-            @strname $strname,
-            @len $($len +)? tmp_res.len(), 
-            @appends {
-                $($appends,)* 
-                $strname.push_str(tmp_res),
-            }, 
-            $($($tail)*)?
-        )
-    };
-
-    (
-        @pre {$($pre:stmt,)*},
-        @strname $strname:ident,
-        @len $len:expr,
-        @appends {$($appends:expr,)*},
-    ) => {
-        {
-            $($pre)*
-            let mut $strname = String::with_capacity($len);
-            $($appends;)*
-            $strname
-        }
-    };
-}
 
 /// Concatenates a sequence of string-like arguments into a new `String`.
 ///
@@ -124,8 +47,83 @@ macro_rules! _concat_str_internal {
 /// ```
 #[macro_export]
 macro_rules! concat_str {
+    (
+        @pre {$($pre:stmt,)*},
+        @strname $strname:ident,
+        @len $($len:expr)?, 
+        @appends {$($appends:expr,)*},
+        $head:literal $(, $($tail:tt)*)?
+    ) => {
+        $crate::concat_str!(
+            @pre {$($pre, )*
+                let tmp_res = $head
+            ,},            
+            @strname $strname,
+            @len $($len +)? tmp_res.len(), 
+            @appends {
+                $($appends,)* 
+                $strname.push_str(tmp_res),
+            }, 
+            $($($tail)*)?
+        )
+    };
+
+    (
+        @pre {$($pre:stmt,)*},
+        @strname $strname:ident,
+        @len $($len:expr)?, 
+        @appends {$($appends:expr,)*},
+        $head:ident $(, $($tail:tt)*)?
+    ) => {
+        $crate::concat_str!(
+            @pre {$($pre, )*},
+            @strname $strname,
+            @len $($len +)? $head.len(), 
+            @appends {
+                $($appends,)* 
+                $strname.push_str($head),
+            }, 
+            $($($tail)*)?
+        )
+    };
+
+    (
+        @pre {$($pre:stmt,)*},
+        @strname $strname:ident,
+        @len $($len:expr)?, 
+        @appends {$($appends:expr,)*},
+        $head:expr $(, $($tail:tt)*)?
+    ) => {
+        $crate::concat_str!(
+            @pre {$($pre, )*
+                let tmp_res = $head
+            ,},
+            @strname $strname,
+            @len $($len +)? tmp_res.len(), 
+            @appends {
+                $($appends,)* 
+                $strname.push_str(tmp_res),
+            }, 
+            $($($tail)*)?
+        )
+    };
+
+    (
+        @pre {$($pre:stmt,)*},
+        @strname $strname:ident,
+        @len $len:expr,
+        @appends {$($appends:expr,)*},
+    ) => {
+        {
+            $($pre)*
+            let mut $strname = String::with_capacity($len);
+            $($appends;)*
+            $strname
+        }
+    };
+
     ($($tt:tt)+) => {
-        $crate::_concat_str_internal!(@pre {}, @strname res_string, @len, @appends {}, $($tt)+)
+        $crate::concat_str!(@pre {}, @strname res_string, @len, @appends {}, $($tt)+)
     };
 }
 
