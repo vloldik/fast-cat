@@ -1,0 +1,3 @@
+fast-cat provides a powerful concat_str! macro that combines the performance of manual memory management with the convenience of format!.
+When concatenating multiple string parts, common methods like using the + operator can lead to multiple memory reallocations, impacting performance. The concat_str! macro avoids this by first calculating the total required size, performing a single allocation for the final String, and then efficiently appending all the parts.
+It is the perfect choice when you need to build a String from various string literals, &str slices, and String variables in a performance-sensitive context.
