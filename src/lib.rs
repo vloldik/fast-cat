@@ -174,7 +174,6 @@ mod tests {
                 "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
                 "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
                 "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
-                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
             ),
             "repeat?".repeat(100)
         );
