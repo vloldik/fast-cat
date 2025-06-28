@@ -1,5 +1,6 @@
 #![doc = include_str!("../Readme.md")]
 
+#[macro_export]
 macro_rules! _concat_str_internal {
     (
         @pre {$($pre:stmt,)*},
@@ -29,7 +30,7 @@ macro_rules! _concat_str_internal {
         @appends {$($appends:expr,)*},
         $head:ident $(, $($tail:tt)*)?
     ) => {
-        _concat_str_internal!(
+        $crate::_concat_str_internal!(
             @pre {$($pre, )*},
             @strname $strname,
             @len $($len +)? $head.len(), 
@@ -48,7 +49,7 @@ macro_rules! _concat_str_internal {
         @appends {$($appends:expr,)*},
         $head:expr $(, $($tail:tt)*)?
     ) => {
-        _concat_str_internal!(
+        $crate::_concat_str_internal!(
             @pre {$($pre, )*
                 let tmp_res = $head
             ,},
@@ -124,7 +125,7 @@ macro_rules! _concat_str_internal {
 #[macro_export]
 macro_rules! concat_str {
     ($($tt:tt)+) => {
-        _concat_str_internal!(@pre {}, @strname res_string, @len, @appends {}, $($tt)+)
+        $crate::_concat_str_internal!(@pre {}, @strname res_string, @len, @appends {}, $($tt)+)
     };
 }
 
@@ -157,6 +158,26 @@ mod tests {
             concat_str!("so, ", &i.to_string(), " ", &c),
             "so, 3 focal"
         );
+
+        // recursion limit by default is 128, so it should compile
+        let repeat = "repeat?";
+        let repeat_o = "repeat?".to_string();
+        assert_eq!(
+            concat_str!(
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+            ),
+            "repeat?".repeat(100)
+        );
     }
 
     #[test]
@@ -168,5 +189,28 @@ mod tests {
             concat_str!(&short_str, " ", &long_str),
             "1 long_string"
         );
+    }
+
+    #[cfg(feature="count-allocations")]
+    #[test]
+    fn test_single_alloc() {
+        let repeat = "repeat?";
+        let repeat_o = "repeat?".to_string();
+        let alloc_count = allocation_counter::measure(|| {
+            let _ = concat_str!(
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+                "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, "repeat?", repeat, &repeat_o, repeat,
+            );
+        });
+        assert_eq!(alloc_count.count_total, 1);
     }
 }
