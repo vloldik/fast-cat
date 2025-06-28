@@ -9,7 +9,7 @@ macro_rules! _concat_str_internal {
         @appends {$($appends:expr,)*},
         $head:literal $(, $($tail:tt)*)?
     ) => {
-        _concat_str_internal!(
+        $crate::_concat_str_internal!(
             @pre {$($pre, )*
                 let tmp_res = $head
             ,},            
