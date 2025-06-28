@@ -8,6 +8,7 @@ authors = ["vloldik (@vloldik)"]
 
 keywords = ["string", "concat", "performance", "strcat"]
 categories = ["text-processing", "development-tools::procedural-macro-helpers"]
+documentation = "./Readme.md"
 
 [dependencies]
 allocation-counter = { version = "0", optional = true }
